@@ -11,5 +11,5 @@ jobs:
       - uses: actions/checkout@v7
       - uses: v-mahabaleshwars/setup-node@feature/852-absolute-path
         with:
-          node-version-file: .nvmrc
+          node-version-file: ${{ github.workspace }}/.nvmrc
       - run: node --version

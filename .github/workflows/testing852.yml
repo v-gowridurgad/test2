@@ -2,13 +2,14 @@ name: testing852
 on: workflow_dispatch
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest, windows-11-arm, macos-15-large, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
-        with:
-          repository: gowridurgad/test-setup-node
-          path: /temp/nvmrc-fixture
       - uses: v-mahabaleshwars/setup-node@feature/852-absolute-path
         with:
-          node-version-file: /temp/nvmrc-fixture/.nvmrc
+          node-version-file: .nvmrc
       - run: node --version

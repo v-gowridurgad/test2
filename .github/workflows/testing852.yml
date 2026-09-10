@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       # - uses: v-mahabaleshwars/setup-node@feature/852-absolute-path
-      - uses: sctions/setup-node@v7
+      - uses: actions/setup-node@v7
       
         with:
           node-version-file: ./packages/../.nvmrc

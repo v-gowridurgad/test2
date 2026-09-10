@@ -1,0 +1,11 @@
+name: testing852
+on: workflow_dispatch
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: v-mahabaleshwars/setup-node@feature/852-absolute-path
+        with:
+          node-version-file: .nvmrc
+      - run: node --version

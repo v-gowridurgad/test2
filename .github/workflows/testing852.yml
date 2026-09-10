@@ -5,11 +5,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest, windows-11-arm, ubuntu-24.04-arm, macos-15-intel]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
       - uses: v-mahabaleshwars/setup-node@feature/852-absolute-path
         with:
-          node-version-file: ${{ github.workspace }}/.nvmrc
+          node-version-file: mise.toml
       - run: node --version

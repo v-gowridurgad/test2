@@ -2,16 +2,12 @@ name: testing852
 on: workflow_dispatch
 jobs:
   test:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v7
-      # - uses: v-mahabaleshwars/setup-node@feature/852-absolute-path
-      - uses: actions/setup-node@v7
+      - uses: v-mahabaleshwars/setup-node@feature/852-absolute-path
+      # - uses: actions/setup-node@v7
       
         with:
-          node-version-file: ./packages/../.nvmrc
+          node-version-file: .node-version
       - run: node --version

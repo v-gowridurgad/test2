@@ -1,0 +1,45 @@
+name: macos-arm64-diff
+on: workflow_dispatch
+
+jobs:
+  home-unwritable-priya:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v7
+      - name: Make $HOME/.dotnet's parent unwritable
+        run: |
+          mkdir -p "$HOME/.dotnet"
+          chmod a-w "$HOME"
+      - uses: v-priyagupta108/setup-dotnet@install-dir-writable-fallback
+        with:
+          dotnet-version: '8.0.x'
+      - name: Check where it landed
+        if: always()
+        run: |
+          chmod u+w "$HOME"
+          echo "DOTNET_ROOT=$DOTNET_ROOT"
+          # #5 has no temp-tier — expect it to retain $HOME/.dotnet with a warning
+          # or fail. It should NOT land in /tmp/.dotnet.
+          test "$DOTNET_ROOT" != "/tmp/.dotnet" || { echo "unexpected /tmp fallback"; exit 1; }
+
+  home-unwritable-maha:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v7
+      - name: Make $HOME/.dotnet's parent unwritable
+        run: |
+          mkdir -p "$HOME/.dotnet"
+          chmod a-w "$HOME"
+      - uses: v-mahabaleshwars/setup-dotnet@feature/518-fallback
+        with:
+          dotnet-version: '8.0.x'
+      - name: Check where it landed
+        if: always()
+        run: |
+          chmod u+w "$HOME"
+          echo "DOTNET_ROOT=$DOTNET_ROOT"
+          # #4 has a temp-tier — expect it to land in $RUNNER_TEMP/.dotnet or /tmp/.dotnet
+          case "$DOTNET_ROOT" in
+            "$RUNNER_TEMP/.dotnet"|/tmp/.dotnet|/private/tmp/.dotnet) echo "expected temp fallback";;
+            *) echo "unexpected location: $DOTNET_ROOT"; exit 1;;
+          esac

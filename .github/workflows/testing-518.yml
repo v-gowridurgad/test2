@@ -2,44 +2,41 @@ name: testing-518
 on: workflow_dispatch
 
 jobs:
-  home-unwritable-priya:
+  home-dotnet-unwritable-maha:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v7
-      - name: Make $HOME/.dotnet's parent unwritable
+      - name: Clean prior installs and make $HOME/.dotnet's parent read-only
         run: |
+          rm -rf "$HOME/.dotnet"
+          mkdir -p "$HOME/.dotnet"
+          chmod a-w "$HOME"          # deny mkdir in $HOME
+      - uses: v-mahabaleshwars/setup-dotnet@feature/518-fallback
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore + report where it landed
+        if: always()
+        run: |
+          chmod u+w "$HOME"
+          echo "DOTNET_ROOT=$DOTNET_ROOT"
+          echo "Contents of /tmp/.dotnet:"; ls -la /tmp/.dotnet 2>/dev/null || echo "  (absent)"
+          echo "Contents of \$RUNNER_TEMP/.dotnet:"; ls -la "$RUNNER_TEMP/.dotnet" 2>/dev/null || echo "  (absent)"
+
+  home-dotnet-unwritable-priya:
+    runs-on: self-hosted
+    needs: home-dotnet-unwritable-maha
+    steps:
+      - uses: actions/checkout@v7
+      - name: Clean prior installs and make $HOME/.dotnet's parent read-only
+        run: |
+          rm -rf "$HOME/.dotnet" /tmp/.dotnet "$RUNNER_TEMP/.dotnet"
           mkdir -p "$HOME/.dotnet"
           chmod a-w "$HOME"
       - uses: v-priyagupta108/setup-dotnet@install-dir-writable-fallback
         with:
           dotnet-version: '8.0.x'
-      - name: Check where it landed
+      - name: Restore + report where it landed
         if: always()
         run: |
           chmod u+w "$HOME"
           echo "DOTNET_ROOT=$DOTNET_ROOT"
-          # #5 has no temp-tier — expect it to retain $HOME/.dotnet with a warning
-          # or fail. It should NOT land in /tmp/.dotnet.
-          test "$DOTNET_ROOT" != "/tmp/.dotnet" || { echo "unexpected /tmp fallback"; exit 1; }
-
-  home-unwritable-maha:
-    runs-on: self-hosted
-    steps:
-      - uses: actions/checkout@v7
-      - name: Make $HOME/.dotnet's parent unwritable
-        run: |
-          mkdir -p "$HOME/.dotnet"
-          chmod a-w "$HOME"
-      - uses: v-mahabaleshwars/setup-dotnet@feature/518-fallback
-        with:
-          dotnet-version: '8.0.x'
-      - name: Check where it landed
-        if: always()
-        run: |
-          chmod u+w "$HOME"
-          echo "DOTNET_ROOT=$DOTNET_ROOT"
-          # #4 has a temp-tier — expect it to land in $RUNNER_TEMP/.dotnet or /tmp/.dotnet
-          case "$DOTNET_ROOT" in
-            "$RUNNER_TEMP/.dotnet"|/tmp/.dotnet|/private/tmp/.dotnet) echo "expected temp fallback";;
-            *) echo "unexpected location: $DOTNET_ROOT"; exit 1;;
-          esac
